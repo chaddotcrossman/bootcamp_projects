@@ -1,0 +1,201 @@
+-- SUBQUERIES and CTEs
+/* To understand the value of a subquery we must first understand
+ * the output of the out puts of our queries.*/
+
+--SQL we can generate 
+--1. Tables
+--2. Lists
+--3. A single value 
+
+WITH  actor_First_name_n as
+(
+SELECT *
+FROM actor
+WHERE first_name like'N%'
+)
+SELECT*
+FROM actor_FIRST_name_n
+WHERE last_name LIKE 'S%'
+
+
+
+
+-- 0. Which films have never been rented?
+--Shows every movie from film that has not been rented. We did a left join to pull everything from the film table to join it on the inventory 
+SELECT *
+FROM film f 
+LEFT JOIN inventory i 
+ON f.film_id = i.film_id 
+LEFT JOIN rental r 
+ON r.inventory_id =i.inventory_id 
+WHERE rental_id IS NULL 
+
+--i. subquery to get the most expensive rental price for movies that have never been rented.
+SELECT max (rental_rate)
+FROM 
+(SELECT *
+FROM film f 
+LEFT JOIN inventory i 
+ON f.film_id = i.film_id 
+LEFT JOIN rental r 
+ON r.inventory_id =i.inventory_id 
+WHERE rental_id IS NULL ) AS temp_inventory_table
+
+SELECT *
+FROM film f 
+LEFT JOIN inventory i 
+ON f.film_id = i.film_id 
+LEFT JOIN rental r 
+ON r.inventory_id =i.inventory_id 
+WHERE rental_id = (SELECT max (rental_rate)
+																			FROM (SELECT *
+																							FROM film f 
+																							LEFT JOIN inventory i 
+																							ON f.film_id = i.film_id 
+																							LEFT JOIN rental r 
+																							ON r.inventory_id =i.inventory_id 
+																							WHERE rental_id IS NULL ) AS temp_inventory_table)
+
+
+
+
+
+-- 1. All movies with the actors whose names start with A
+SELECT *
+FROM film f
+WHERE film_id IN 
+(
+SELECT DISTINCT (film_id)
+FROM actor a  
+JOIN film_actor fa 
+ON fa.actor_id =a.actor_id 
+WHERE first_name  LIKE 'A%'
+)
+-- 1.1. What is the average rental rate per rental in our video store
+-- 2.1. What is the average rental rate?
+SELECT round(avg(f.rental_rate),2)
+FROM rental r 
+JOIN inventory i ON r.inventory_id =i.inventory_id 
+JOIN film f ON i.film_id= f.film_id 
+
+SELECT avg(rental_rate)
+FROM film f 
+
+-- 1.2. Actors whose first names start with A
+--produces a table
+
+SELECT*
+FROM actor a 
+WHERE first_name LIKE 'A%'
+
+-- 1.3. IDs of actors whose first names start with A
+--Produces   a list 
+
+SELECT actor_id 
+FROM actor
+WHERE first_name LIKE 'A%'
+
+-- 1.4. All movies with the actors whose names start with A
+
+
+SELECT title
+FROM film f 
+WHERE f.film_id = (SELECT *
+FROM film_actor fa 
+WHERE fa.actor_id IN (SELECT actor_id 
+FROM actor
+WHERE first_name LIKE 'A%'))
+
+
+-- 2. What films have an above average rental rate?
+-- 2.2. What films have an above average rental rate?
+SELECT title, rental_rate 
+FROM film
+WHERE rental_rate > (SELECT round(avg(f.rental_rate),2)
+FROM rental r 
+JOIN inventory i ON r.inventory_id =i.inventory_id 
+JOIN film f ON i.film_id= f.film_id)
+
+
+
+-- 3.3 Which actors play in our top 10 most rented films?
+
+
+--SUB-QUERY THIS LINKS RENTAL TABNLE TO FILM TABLE TO GIVE RENTAL ID TITLES
+
+WITH rentals_and_films AS
+(
+SELECT r.rental_id, r.inventory_id ,i.film_id, f.title
+FROM rental r
+LEFT JOIN inventory i ON r.inventory_id =i.inventory_id
+LEFT JOIN film f ON i.film_id =f.film_id
+)
+SELECT film_id, title, count(*)
+FROM rentals_and_films
+GROUP BY film_id, title
+ORDER BY 3 DESC
+
+WITH rentals_and_films AS 
+(
+SELECT r.rental_id, r.inventory_id, i.film_id, f.title
+FROM rental r 
+LEFT JOIN inventory i ON r.inventory_id = i.inventory_id 
+LEFT JOIN film f ON i.film_id = f.film_id 
+)
+SELECT film_id, title, count(*)
+FROM rentals_and_films
+GROUP BY film_id, title
+ORDER BY count(*) DESC
+LIMIT 10
+
+SELECT a.actor_id, a.first_name ,a.last_name ,f.title, p.rental_id
+FROM actor a 
+LEFT JOIN film_actor fa  ON a.actor_id =fa.actor_id
+LEFT JOIN film f ON fa.film_id =f.film_id 
+LEFT JOIN inventory i ON i.film_id =f.film_id
+LEFT JOIN rental r  ON r.inventory_id =i.inventory_id 
+LEFT JOIN payment p ON p.rental_id =r.rental_id
+GROUP BY a.actor_id, a.first_name ,a.last_name ,f.title, p.rental_id
+
+
+WITH staff_id_rental AS 
+(
+SELECT staff_id,(count (rental_id) * amount) AS Rental_amount
+FROM payment p
+WHERE staff_id = '1' OR staff_id='2'
+GROUP BY  staff_id, amount
+)
+SELECT staff_id,sum(rental_amount)
+FROM staff_id_rental
+GROUP BY staff_id 
+
+
+SELECT staff_id, count(payment_id)
+FROM payment p 
+GROUP BY staff_id
+
+SELECT rating,round(avg(replacement_cost),2)
+FROM film f 
+GROUP BY rating 
+
+WITH rental_customer_id AS 
+(
+SELECT customer_id,(count(payment_id)* amount)AS rental_amount_customer
+FROM payment p 
+GROUP BY customer_id, amount
+ORDER BY rental_amount_customer DESC
+)
+
+WITH  total_spend AS 
+(
+SELECT customer_id,staff_id ,(count(payment_id) * amount)AS rental_amount_customer
+FROM payment p 
+GROUP BY customer_id,staff_id, amount  
+ORDER BY rental_amount_customer DESC
+)
+SELECT customer_id, staff_id 
+FROM total_spend
+WHERE rental_amount_customer >'110' AND  staff_id ='2'
+GROUP BY customer_id, staff_id 
+
+

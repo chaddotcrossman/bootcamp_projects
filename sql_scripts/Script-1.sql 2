@@ -1,0 +1,134 @@
+SELECT *
+FROM film --- selecting the table
+
+SELECT f.title, count(f.film_id)--- most rented film IN the inventory 
+FROM film f 
+JOIN inventory i 
+ON f.film_id = i.film_id
+JOIN rental r 
+ON r.inventory_id = i.inventory_id 
+GROUP BY f.title 
+ORDER BY count(f.film_id) DESC
+
+SELECT c.name, count(r.rental_id) AS total_rental_amount
+FROM category c 
+JOIN film_category fc 
+ON c.category_id = fc.category_id 
+JOIN film f 
+ON f.film_id = fc.film_id 
+JOIN inventory i 
+ON f.film_id = i.film_id 
+JOIN rental r 
+ON r.inventory_id = i.inventory_id 
+GROUP BY c."name" 
+ORDER BY total_rental_amount DESC --- List OF the film categories IN ORDER OF most mone spent 
+
+--list of films that have no inventory 
+
+SELECT f.title, count(i.inventory_id) AS In_stock
+FROM film f 
+LEFT JOIN inventory i 
+ON f.film_id = i.film_id 
+GROUP BY f.title
+HAVING count(i.inventory_id) = 0
+ORDER BY f.title 
+
+
+
+-- dvdrental questions CASE WHEN
+
+*****************************Basic Syntax*****************************
+
+--The CASE evaluates one or more conditions and returns the result 
+--for the first condition that is true. 
+--If no condition is true, the result after ELSE is 
+--returned, or NULL if there is no ELSE part.
+--
+--General Syntax
+--
+--CASE
+--    WHEN condition1 THEN result1
+--    WHEN condition2 THEN result2
+--    WHEN conditionN THEN resultN
+--    ELSE result
+--END AS ColumnName
+
+
+Question 1:
+
+--Select the title, description, rating and replacement_cost 
+--for every movie with a title that starts with the letter 'A'
+
+SELECT title, description, rating, replacement_cost 
+FROM film
+WHERE title LIKE 'A%'
+ORDER BY replacement_cost desc 
+
+
+Question 2:
+
+--Select the title, description, rating and replacement_cost 
+--for every movie about data
+
+SELECT title, description, rating, replacement_cost 
+FROM film 
+WHERE description ILIKE '%data%'
+
+
+Question 3:
+
+--Create a table the includes the Title, The Category, Description, 
+--the Rental Rate and the rating of every movie that starts with c
+
+
+SELECT f.title, c."name", f.description, f.rental_rate, f.rating 
+FROM film f 
+JOIN film_category fc 
+ON f.film_id = fc.film_id
+JOIN category c 
+ON fc.category_id =c.category_id
+WHERE f.title ILIKE 'c%'
+
+
+Question 4:
+
+--Create a table the includes the Title, The Category, Description, 
+--the Rental Rate and the rating of every movie
+--Create an additional column called recommended audience that
+--designates all movies rated G, PG and PG-13 as Family Friendly and 
+--all others as not family friendly
+
+select
+FROM film f 
+JOIN film_category fc 
+ON f.film_id = fc.film_id
+JOIN category c 
+ON fc.category_id =c.category_id
+
+Question 5:
+
+--Create a table the includes the Title, The Category, 
+--and the rental rate of every movie. 
+--Create an additional column 'price_category' that lables
+--every move with price below 2.99 as 'Discount', at least 2.99 
+--but below 4.99 as 'Full Price' and anything above that as 'Premium'
+
+Question 6:
+
+--Create a table that includes the the category, and the average
+--rental rate per category from most to least expensive
+
+Question 7:
+
+--Create a table that includes the title, the category, the rental rate and the average
+--rental rate per category
+
+Question 8: 
+
+--Every customer that has spent at least $150 gets a coupon for 10% of the value of their total purchases
+--Every customer that has spent at least $100 but less than $150 gets a coupon for 5% of the value of their total purchases
+--All others get nothing
+--Create a table showing the name, customer_id and sum of purchases per customer and the value of the coupon
+--they will be issued
+
+

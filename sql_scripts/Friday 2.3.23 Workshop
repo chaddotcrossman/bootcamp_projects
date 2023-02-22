@@ -1,0 +1,45 @@
+SELECT * FROM Olympic_Athlete_Bio oab 
+
+SELECT * FROM Olympic_Athlete_Event_Results oaer 
+WHERE sport In()
+
+SELECT  *
+FROM Olympic_Athlete_Event_Results oaer 
+GROUP BY sport 
+HAVING  sport LIKE '%ball%'
+ORDER BY edition_id  ASC 
+
+SELECT * 
+FROM Olympic_Athlete_Event_Results oaer 
+WHERE sport ='Football'
+GROUP BY country_noc 
+HAVING event = 'Football'
+ORDER BY edition ASC 
+
+SELECT *
+FROM Olympic_Athlete_Bio oab 
+
+SELECT *
+FROM Olympic_Athlete_Bio oab WHERE sex = 'Female'
+GROUP BY country 
+ORDER BY height DESC
+
+SELECT *
+FROM Olympic_Athlete_Bio oab 
+JOIN Olympic_Athlete_Event_Results oaer 
+ON oaer.athlete_id = oab.athlete_id 
+WHERE event IN ('Football', 'Football, Men', 'Football, Women')
+GROUP BY oaer.country_noc 
+HAVING medal IN ('Gold', 'Silver','Bronze')
+
+
+
+
+
+
+
+SELECT edition_id , country_noc, event, count(medal)
+FROM Olympic_Athlete_Event_Results oaer 
+WHERE event IN ('Football', 'Football, Men', 'Football, Women')
+GROUP BY edition_id 
+
